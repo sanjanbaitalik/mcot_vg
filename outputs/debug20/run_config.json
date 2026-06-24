@@ -1,0 +1,17 @@
+{
+  "n": 20,
+  "seed": 42,
+  "category_counts": {
+    "other": 13,
+    "animals": 3,
+    "household": 3,
+    "scenes": 1
+  },
+  "methods": [
+    "baseline",
+    "mcot",
+    "vg_crop",
+    "mcot_vg",
+    "router"
+  ]
+}

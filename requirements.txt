@@ -1,0 +1,16 @@
+torch
+torchvision
+transformers>=4.45.0
+accelerate
+bitsandbytes>=0.46.1
+datasets
+pillow
+opencv-python
+numpy
+scipy
+statsmodels
+tqdm
+matplotlib
+pyyaml
+grad-cam
+google-genai

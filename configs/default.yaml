@@ -1,0 +1,22 @@
+experiment:
+  n: 1145
+  seed: 42
+  methods:
+    - baseline
+    - mcot
+    - vg_crop
+    - mcot_vg
+    - router
+model:
+  model_id: llava-hf/llava-1.5-7b-hf
+  load_in_4bit: true
+grounding:
+  clip_id: openai/clip-vit-base-patch32
+  cam_percentile: 80
+  composite_size: 336
+evaluation:
+  judge: gemini   # strict or gemini
+  gemini_model: gemini-2.5-flash
+  final_votes: 3
+claims:
+  use_generated_claims_only: true
