@@ -45,6 +45,7 @@ def empty_result(method: str):
         "categories": [],
         "questions": [],
         "gt_answers": [],
+        "meta": [],
     }
 
 
@@ -60,6 +61,7 @@ def append_pred(result: dict, sample: dict, pred: Prediction, correct: bool, cor
     result["categories"].append(sample["category"])
     result["questions"].append(sample["question"])
     result["gt_answers"].append(sample["answers"])
+    result["meta"].append(pred.meta)
 
 
 def main():
@@ -108,6 +110,7 @@ def main():
                     steps=results[method]["steps"][i],
                     faith_del=results[method]["faith_del"][i],
                     faith_ins=results[method]["faith_ins"][i],
+                    meta=results[method].get("meta", [None] * len(results[method]["answers"]))[i],
                 )
                 continue
             t0 = time.time()

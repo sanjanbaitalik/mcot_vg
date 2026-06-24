@@ -5,19 +5,20 @@ def baseline_prompt(question: str) -> str:
     return (
         f"Question: {question}\n"
         "Answer in 1-3 words only.\n"
+        "Output only the answer phrase, with no explanation.\n"
         "FINAL ANSWER:"
     )
 
 
 def mcot_prompt_v2(question: str) -> str:
-    # Critical fix: A-OKVQA needs commonsense/world knowledge; do not say visual-only.
+    # Do not mention dataset names here; some LLaVA checkpoints copy them as the answer.
     return (
-        "You are solving an A-OKVQA visual question. Use visible evidence and necessary commonsense/world knowledge.\n\n"
+        "Solve this visual question using visible evidence and necessary commonsense/world knowledge.\n\n"
         "Step 1: Identify the visual evidence relevant to the question.\n"
         "Step 2: Add only the necessary commonsense or world knowledge.\n"
         "Step 3: Infer the most likely short answer.\n\n"
         f"Question: {question}\n"
-        "Keep the reasoning concise, then provide the answer.\n"
+        "Keep the reasoning concise. End with the answer phrase only.\n"
         "Answer in 1-3 words only.\n"
         "FINAL ANSWER:"
     )
@@ -33,7 +34,7 @@ def step1_visual_evidence_prompt(question: str) -> str:
 
 def step2_grounded_evidence_prompt(question: str, step1: str) -> str:
     return (
-        "The image shows the original full image on the left and a zoomed visual-grounding crop on the right. "
+        "The image shows the original full image on the left and a zoomed grounding crop on the right. "
         "Use the full image as the primary evidence and the crop only as an extra visual hint.\n\n"
         f"Question: {question}\n"
         f"Initial visual evidence: {step1[:220]}\n"
@@ -44,12 +45,24 @@ def step2_grounded_evidence_prompt(question: str, step1: str) -> str:
 
 def final_answer_prompt(question: str, step1: str, step2: str) -> str:
     return (
-        "The image shows the original full image on the left and a zoomed visual-grounding crop on the right. "
-        "Use both visible evidence and necessary commonsense/world knowledge.\n\n"
+        "The image shows the original full image on the left and a zoomed grounding crop on the right. "
+        "Use the full image first; use the crop and evidence notes only as support.\n\n"
         f"Question: {question}\n"
         f"Visual evidence: {step1[:220]}\n"
         f"Grounded evidence: {step2[:240]}\n"
-        "Return the most likely A-OKVQA direct answer.\n"
+        "Use visible evidence plus commonsense/world knowledge if needed.\n"
+        "Return only the object, action, attribute, number, place, or short phrase that answers the question.\n"
+        "Do not output a dataset name, benchmark name, task name, or explanation.\n"
+        "Answer in 1-3 words only.\n"
+        "FINAL ANSWER:"
+    )
+
+
+def fallback_final_prompt(question: str) -> str:
+    return (
+        "Answer the visual question from the image.\n"
+        f"Question: {question}\n"
+        "Return only the short answer phrase. Do not output a dataset name or task name.\n"
         "Answer in 1-3 words only.\n"
         "FINAL ANSWER:"
     )
@@ -57,10 +70,11 @@ def final_answer_prompt(question: str, step1: str, step2: str) -> str:
 
 def vg_crop_prompt(question: str) -> str:
     return (
-        "The image shows the original full image on the left and a zoomed visual-grounding crop on the right. "
+        "The image shows the original full image on the left and a zoomed grounding crop on the right. "
         "Use the full image as primary evidence and the crop as a helpful hint.\n\n"
         f"Question: {question}\n"
         "Answer in 1-3 words only.\n"
+        "Output only the answer phrase, with no explanation.\n"
         "FINAL ANSWER:"
     )
 
@@ -69,6 +83,7 @@ def router_prompt(question: str, candidates: dict[str, str]) -> str:
     lines = [
         "Choose the answer that is most consistent with the image and the question.",
         "Do not prefer a longer answer. Prefer the most specific correct answer.",
+        "Output only the final answer phrase.",
         f"Question: {question}",
     ]
     for name, ans in candidates.items():

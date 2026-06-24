@@ -9,6 +9,12 @@ from typing import Any, Dict, Iterable, List, Optional
 import numpy as np
 
 
+INVALID_ANSWERS = {
+    "a okvqa", "okvqa", "aokvqa", "vqa", "visual question", "visual question answering",
+    "dataset", "benchmark", "direct answer", "answer", "unknown", "not sure", "cannot determine",
+}
+
+
 def ensure_dir(path: str | Path) -> Path:
     p = Path(path)
     p.mkdir(parents=True, exist_ok=True)
@@ -79,6 +85,19 @@ def normalize_text(text: str) -> str:
 
 def normalize_tokens(text: str) -> List[str]:
     return re.findall(r"[a-zA-Z]+|\d+", str(text).lower())
+
+
+def is_valid_answer(answer: str, max_words: int = 6) -> bool:
+    a = normalize_text(answer)
+    if not a or a in INVALID_ANSWERS:
+        return False
+    toks = normalize_tokens(a)
+    if len(toks) == 0 or len(toks) > max_words:
+        return False
+    # Defensive: reject if it contains only benchmark/task words.
+    if all(t in {"a", "okvqa", "vqa", "dataset", "benchmark", "answer", "direct"} for t in toks):
+        return False
+    return True
 
 
 def clean_answer(text: str, max_words: int = 4) -> str:
